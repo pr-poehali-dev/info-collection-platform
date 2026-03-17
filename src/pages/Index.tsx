@@ -1,157 +1,155 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import FormModal from "@/components/FormModal";
+import OrderTracker from "@/components/OrderTracker";
 
-const HERO_BG = "https://cdn.poehali.dev/projects/4ad4e45b-5ef6-4e0b-be5a-bf6e347fb55f/files/01933277-d594-4446-914a-4c624f0628f1.jpg";
+const HERO_IMG = "https://cdn.poehali.dev/projects/4ad4e45b-5ef6-4e0b-be5a-bf6e347fb55f/files/287ee05d-0feb-4b97-8602-5c80c3ace380.jpg";
+const DOCS_IMG = "https://cdn.poehali.dev/projects/4ad4e45b-5ef6-4e0b-be5a-bf6e347fb55f/files/34f0f261-4da1-42a9-9957-86ff224be47a.jpg";
 
 const NAV_LINKS = [
-  { label: "Главная", href: "#home" },
-  { label: "О сайте", href: "#about" },
-  { label: "Форма", href: "#form" },
+  { label: "Услуги", href: "#features" },
+  { label: "Тарифы", href: "#tariffs" },
+  { label: "Как работает", href: "#how" },
+  { label: "Акции", href: "#promo" },
+  { label: "Отзывы", href: "#reviews" },
   { label: "FAQ", href: "#faq" },
-  { label: "Контакты", href: "#contacts" },
-];
-
-const FAQ_ITEMS = [
-  {
-    q: "Как долго рассматривается заявка?",
-    a: "Мы обрабатываем каждую заявку в течение 1-2 рабочих дней. Вы получите уведомление на указанный email сразу после получения."
-  },
-  {
-    q: "Какие форматы файлов можно загрузить?",
-    a: "Поддерживаются форматы JPG, PNG, GIF, PDF, DOC, DOCX. Максимальный размер файла — 10 МБ."
-  },
-  {
-    q: "Мои данные в безопасности?",
-    a: "Да, все данные передаются по защищённому протоколу HTTPS и хранятся в зашифрованном виде. Мы не передаём информацию третьим лицам."
-  },
-  {
-    q: "Можно ли отредактировать заявку после отправки?",
-    a: "Для редактирования уже отправленной заявки, пожалуйста, свяжитесь с нами напрямую через раздел «Контакты»."
-  },
-  {
-    q: "Что происходит после отправки формы?",
-    a: "Ваша заявка поступает к нам на email и в систему обработки. Наш специалист свяжется с вами в ближайшее время."
-  },
 ];
 
 const FEATURES = [
+  { icon: "Clock", color: "#1167d6", title: "10 минут", desc: "Среднее время оформления полиса от момента заявки" },
+  { icon: "Shield", color: "#16a34a", title: "Надёжно", desc: "Работаем только с аккредитованными страховщиками" },
+  { icon: "Globe", color: "#9333ea", title: "RU и KZ", desc: "Полисы для въезда в Россию и Казахстан" },
+  { icon: "Headphones", color: "#ea580c", title: "24/7", desc: "Поддержка в Telegram в любое время суток" },
+];
+
+const TARIFFS_RU = [
+  { period: "15 дней", price: "от 800 ₽", popular: false },
+  { period: "1 месяц", price: "от 1 200 ₽", popular: true },
+  { period: "3 месяца", price: "от 2 800 ₽", popular: false },
+  { period: "6 месяцев", price: "от 4 500 ₽", popular: false },
+];
+
+const TARIFFS_KZ = [
+  { period: "15 дней", price: "от 4 000 ₸", popular: false },
+  { period: "1 месяц", price: "от 7 000 ₸", popular: true },
+  { period: "3 месяца", price: "от 15 000 ₸", popular: false },
+  { period: "6 месяцев", price: "от 25 000 ₸", popular: false },
+];
+
+const HOW_STEPS = [
+  { num: "01", icon: "Upload", title: "Отправьте документы", desc: "Заполните форму и загрузите фото паспорта, СТС и прав" },
+  { num: "02", icon: "CreditCard", title: "Оплатите по СБП", desc: "Менеджер пришлёт реквизиты — оплата переводом за 1 минуту" },
+  { num: "03", icon: "FileCheck", title: "Получите полис", desc: "Готовый полис придёт вам в течение 10 минут" },
+];
+
+const PROMOS = [
   {
-    icon: "Zap",
-    color: "#a855f7",
-    title: "Быстрая обработка",
-    desc: "Заявки обрабатываются автоматически и поступают к нам мгновенно"
+    tag: "СРОЧНО", tagColor: "discount-tag",
+    icon: "Zap", iconBg: "#fef3c7", iconColor: "#d97706",
+    title: "Срочное оформление",
+    desc: "Получите полис за 15 минут в любое время суток",
+    badge: "Доступно 24/7", badgeClass: "badge-orange",
   },
   {
-    icon: "Shield",
-    color: "#00ffff",
-    title: "Защита данных",
-    desc: "Все данные передаются по зашифрованному протоколу HTTPS"
+    tag: "-10%", tagColor: "discount-tag",
+    icon: "RotateCcw", iconBg: "#dcfce7", iconColor: "#16a34a",
+    title: "Скидка повторным клиентам",
+    desc: "10% скидка при оформлении второго и последующих полисов",
+    badge: "Постоянным клиентам", badgeClass: "badge-green",
   },
   {
-    icon: "Image",
-    color: "#ff0080",
-    title: "Загрузка фото",
-    desc: "Прикрепляйте фотографии и документы прямо в форме"
-  },
-  {
-    icon: "Bell",
-    color: "#00ff88",
-    title: "Уведомления",
-    desc: "Получайте подтверждение на почту после каждой заявки"
+    tag: "ВЫГОДНО", tagColor: "discount-tag",
+    icon: "Users", iconBg: "#ede9fe", iconColor: "#7c3aed",
+    title: "Приведи друга",
+    desc: "Получите бонус за каждого приглашённого клиента",
+    badge: "Реферальная программа", badgeClass: "badge-blue",
   },
 ];
 
+const REVIEWS = [
+  { name: "Алексей М.", city: "Москва", stars: 5, text: "Оформил полис за 8 минут! Всё быстро, чётко, без лишней бюрократии. Буду рекомендовать." },
+  { name: "Динара К.", city: "Алматы", stars: 5, text: "Въезжала в Россию, нужен был полис. Написала в 11 вечера — за 12 минут всё было готово. Спасибо!" },
+  { name: "Иван П.", city: "Екатеринбург", stars: 5, text: "Уже третий раз пользуюсь. Скидка постоянным клиентам реально есть, что приятно." },
+  { name: "Малика Б.", city: "Нур-Султан", stars: 5, text: "Понятный сайт, даже бабушка разобралась. Документы загрузили, оплатили — всё пришло быстро." },
+];
+
+const DOCS_LIST = [
+  { icon: "BookUser", label: "Паспорт", desc: "Лицевая сторона с фото" },
+  { icon: "Car", label: "СТС", desc: "Свидетельство о регистрации ТС (обе стороны)" },
+  { icon: "CreditCard", label: "Права", desc: "Водительское удостоверение (обе стороны)" },
+];
+
+const FAQ_ITEMS = [
+  { q: "Как быстро я получу полис?", a: "В среднем 10 минут с момента оплаты. В ночное время может занять до 30 минут." },
+  { q: "Для каких стран оформляете полис?", a: "Оформляем страховку для въезда в Россию (ОСАГО) и в Казахстан (ГПО ВТС)." },
+  { q: "Как происходит оплата?", a: "Оплата через СБП — перевод на карту. Реквизиты пришлёт менеджер после проверки документов." },
+  { q: "Нужно ли приезжать лично?", a: "Нет! Всё делается онлайн. Вы загружаете фото документов, мы всё оформляем удалённо." },
+  { q: "Что делать если в полисе ошибка?", a: "Напишите нам в Telegram, исправим бесплатно в течение 30 минут." },
+];
+
 export default function Index() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [files, setFiles] = useState<File[]>([]);
-  const [dragging, setDragging] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "", email: "", phone: "", subject: "", message: ""
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [tariffTab, setTariffTab] = useState<"ru" | "kz">("ru");
 
   const scrollTo = (href: string) => {
-    const id = href.replace("#", "");
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    setMobileMenuOpen(false);
+    document.getElementById(href.replace("#", ""))?.scrollIntoView({ behavior: "smooth" });
+    setMenuOpen(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const dropped = Array.from(e.dataTransfer.files);
-    setFiles(prev => [...prev, ...dropped].slice(0, 5));
-  };
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const picked = Array.from(e.target.files);
-      setFiles(prev => [...prev, ...picked].slice(0, 5));
-    }
-  };
-
-  const removeFile = (i: number) => {
-    setFiles(prev => prev.filter((_, idx) => idx !== i));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
+  const handleFormSubmit = (id: string) => {
+    setShowForm(false);
+    setOrderId(id);
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
+    <div className="min-h-screen bg-white text-slate-900 font-sans">
 
       {/* NAV */}
-      <nav className="nav-blur fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <a
-            href="#home"
-            onClick={(e) => { e.preventDefault(); scrollTo("#home"); }}
-            className="font-display text-xl font-bold gradient-text tracking-wide"
-          >
-            ЗАЯВКИ
-          </a>
+      <nav className="nav-glass fixed top-0 left-0 right-0 z-50">
+        <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center">
+              <Icon name="Shield" size={16} className="text-white" />
+            </div>
+            <span className="font-display text-xl font-bold text-slate-900 tracking-wide">АвтоПолис</span>
+          </div>
 
-          <ul className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(link => (
-              <li key={link.href}>
-                <button
-                  onClick={() => scrollTo(link.href)}
-                  className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white rounded-lg hover:bg-white/5 transition-all duration-200"
-                >
-                  {link.label}
+          <ul className="hidden lg:flex items-center gap-1">
+            {NAV_LINKS.map(l => (
+              <li key={l.href}>
+                <button onClick={() => scrollTo(l.href)}
+                  className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all">
+                  {l.label}
                 </button>
               </li>
             ))}
           </ul>
 
-          <button
-            onClick={() => scrollTo("#form")}
-            className="hidden md:flex btn-neon px-5 py-2 rounded-xl text-sm font-bold"
-          >
-            Подать заявку
-          </button>
-
-          <button
-            className="md:hidden text-white/80 hover:text-white"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <Icon name={mobileMenuOpen ? "X" : "Menu"} size={22} />
-          </button>
+          <div className="flex items-center gap-3">
+            <a href="https://t.me/" target="_blank" rel="noopener noreferrer"
+              className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+              <Icon name="MessageCircle" size={16} />
+              Telegram
+            </a>
+            <button onClick={() => setShowForm(true)} className="btn-primary px-5 py-2.5 text-sm">
+              Оформить полис
+            </button>
+            <button className="lg:hidden w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center"
+              onClick={() => setMenuOpen(!menuOpen)}>
+              <Icon name={menuOpen ? "X" : "Menu"} size={18} className="text-slate-600" />
+            </button>
+          </div>
         </div>
 
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-background/95 border-t border-white/10 px-6 py-4 flex flex-col gap-2">
-            {NAV_LINKS.map(link => (
-              <button
-                key={link.href}
-                onClick={() => scrollTo(link.href)}
-                className="text-left py-2 text-sm font-medium text-white/70 hover:text-white transition-colors"
-              >
-                {link.label}
+        {menuOpen && (
+          <div className="lg:hidden bg-white border-t border-slate-100 px-5 py-4 flex flex-col gap-1">
+            {NAV_LINKS.map(l => (
+              <button key={l.href} onClick={() => scrollTo(l.href)}
+                className="text-left px-3 py-2.5 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                {l.label}
               </button>
             ))}
           </div>
@@ -159,346 +157,307 @@ export default function Index() {
       </nav>
 
       {/* HERO */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${HERO_BG})` }}
-        />
-        <div className="absolute inset-0 bg-background/60" />
-        <div className="absolute inset-0 mesh-bg opacity-60" />
+      <section id="home" className="relative min-h-screen flex items-center overflow-hidden pt-16">
+        <div className="absolute inset-0">
+          <img src={HERO_IMG} alt="hero" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 hero-gradient opacity-85" />
+        </div>
 
-        <div
-          className="absolute top-1/4 left-10 w-64 h-64 rounded-full opacity-20 blur-3xl float-anim"
-          style={{ background: 'radial-gradient(circle, #a855f7, transparent)' }}
-        />
-        <div
-          className="absolute bottom-1/4 right-10 w-48 h-48 rounded-full opacity-20 blur-3xl float-anim"
-          style={{ background: 'radial-gradient(circle, #00ffff, transparent)', animationDelay: '2s' }}
-        />
-
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 text-sm font-medium mb-8 fade-in-up-delay-1">
-            <span
-              className="w-2 h-2 rounded-full bg-purple-400 glow-pulse"
-              style={{ boxShadow: '0 0 8px #a855f7' }}
-            />
-            Новые заявки принимаются
-          </div>
-
-          <h1 className="font-display text-5xl md:text-7xl font-bold leading-tight mb-6 fade-in-up-delay-2">
-            ОТПРАВЬТЕ<br />
-            <span className="gradient-text">ВАШУ ЗАЯВКУ</span>
-          </h1>
-
-          <p className="text-white/60 text-lg md:text-xl max-w-xl mx-auto mb-10 fade-in-up-delay-3">
-            Заполните форму, прикрепите фотографии — мы получим всё мгновенно и свяжемся с вами
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center fade-in-up-delay-4">
-            <button
-              onClick={() => scrollTo("#form")}
-              className="btn-neon px-8 py-4 rounded-2xl text-base font-bold"
-            >
-              Заполнить форму
-            </button>
-            <button
-              onClick={() => scrollTo("#about")}
-              className="btn-outline-neon px-8 py-4 rounded-2xl text-base font-bold"
-            >
-              Узнать подробнее
-            </button>
+        <div className="absolute top-32 right-8 lg:right-20 hidden md:block animate-float">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-white">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-xs font-medium">Онлайн сейчас</span>
+            </div>
+            <p className="text-2xl font-bold">10 000+</p>
+            <p className="text-xs text-white/70">довольных клиентов</p>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/30 animate-bounce">
-          <Icon name="ChevronDown" size={28} />
+        <div className="absolute bottom-32 right-8 lg:right-32 hidden lg:block animate-float" style={{ animationDelay: '1.5s' }}>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 text-white">
+            <div className="flex items-center gap-2 mb-1">
+              <Icon name="Clock" size={14} className="text-blue-300" />
+              <span className="text-xs text-white/70">Среднее время</span>
+            </div>
+            <p className="text-xl font-bold">10 мин</p>
+          </div>
+        </div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-5 py-20 md:py-0">
+          <div className="max-w-2xl">
+            <div className="inline-block mb-6 animate-fade-up-1 text-white text-sm font-semibold px-4 py-2 rounded-full border border-white/30 bg-white/10">
+              🇷🇺 Въезд в Россию и 🇰🇿 Казахстан
+            </div>
+            <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-6 animate-fade-up-2">
+              СТРАХОВАНИЕ<br />
+              <span style={{ color: '#7dd3fc' }}>АВТОМОБИЛЯ</span><br />
+              НА ГРАНИЦЕ
+            </h1>
+            <p className="text-white/75 text-lg md:text-xl mb-8 leading-relaxed animate-fade-up-3">
+              Получите полис за <strong className="text-white">10 минут</strong> не выходя из машины.<br />
+              Оплата по СБП, оформление онлайн 24/7.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 animate-fade-up-4">
+              <button onClick={() => setShowForm(true)}
+                className="btn-white px-8 py-4 text-base flex items-center justify-center gap-2">
+                <Icon name="FileText" size={18} />
+                Оформить полис
+              </button>
+              <button onClick={() => scrollTo("#how")}
+                className="flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold rounded-2xl border-2 transition-all"
+                style={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)' }}>
+                Как это работает
+                <Icon name="ArrowRight" size={16} />
+              </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-5 mt-8 animate-fade-up-4">
+              {["Официальные страховщики", "Документы за 10 мин", "Поддержка 24/7"].map((t, i) => (
+                <div key={i} className="flex items-center gap-1.5 text-white/75 text-sm">
+                  <Icon name="Check" size={14} className="text-green-400" />
+                  {t}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ABOUT */}
-      <section id="about" className="py-24 px-6 relative">
+      {/* FEATURES */}
+      <section id="features" className="py-20 px-5 section-blue-soft">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <p className="text-purple-400 font-medium text-sm uppercase tracking-widest mb-3">О сайте</p>
-            <h2 className="font-display text-4xl md:text-5xl font-bold">
-              КАК ЭТО <span className="gradient-text-cyan">РАБОТАЕТ</span>
+          <div className="text-center mb-14">
+            <span className="badge-blue mb-3">Наши преимущества</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 mt-3">
+              Почему выбирают <span className="text-gradient">АвтоПолис</span>
             </h2>
           </div>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
-            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-card p-8 card-glow">
-              <div
-                className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10 blur-3xl"
-                style={{ background: 'radial-gradient(circle, #a855f7, transparent)' }}
-              />
-              <div className="relative">
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
-                  style={{ background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.3)' }}
-                >
-                  <Icon name="FileText" size={26} style={{ color: '#a855f7' }} />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {FEATURES.map((f, i) => (
+              <div key={i} className="bg-white rounded-3xl p-6 card-hover shadow-sm">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: `${f.color}15` }}>
+                  <Icon name={f.icon as "Clock"} size={24} style={{ color: f.color }} />
                 </div>
-                <h3 className="font-display text-2xl font-bold mb-3">Простая форма</h3>
-                <p className="text-white/60 leading-relaxed">
-                  Заполните удобную форму с нужными данными. Добавьте фотографии, описание и контактную информацию — всё в одном месте.
-                </p>
+                <h3 className="font-bold text-slate-900 text-lg mb-2">{f.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
               </div>
-            </div>
-
-            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-card p-8 card-glow">
-              <div
-                className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-10 blur-3xl"
-                style={{ background: 'radial-gradient(circle, #00ffff, transparent)' }}
-              />
-              <div className="relative">
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
-                  style={{ background: 'rgba(0,255,255,0.1)', border: '1px solid rgba(0,255,255,0.25)' }}
-                >
-                  <Icon name="Send" size={26} style={{ color: '#00ffff' }} />
+            ))}
+          </div>
+          <div className="mt-10 bg-gradient-to-r from-blue-600 to-blue-500 rounded-3xl p-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
+              {[
+                { val: "10 000+", label: "Довольных клиентов" },
+                { val: "10 мин", label: "Среднее оформление" },
+                { val: "24/7", label: "Поддержка" },
+                { val: "2 страны", label: "Россия и Казахстан" },
+              ].map((s, i) => (
+                <div key={i}>
+                  <p className="text-3xl font-bold mb-1">{s.val}</p>
+                  <p className="text-white/70 text-sm">{s.label}</p>
                 </div>
-                <h3 className="font-display text-2xl font-bold mb-3">Мгновенная доставка</h3>
-                <p className="text-white/60 leading-relaxed">
-                  После нажатия кнопки отправки все данные и файлы мгновенно поступают на наш email. Никаких задержек.
-                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider mx-5" />
+
+      {/* TARIFFS */}
+      <section id="tariffs" className="py-20 px-5">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="badge-blue mb-3">Тарифы</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 mt-3">Стоимость страховки</h2>
+            <p className="text-slate-500 mt-3 max-w-md mx-auto">Цена зависит от срока, мощности авто и страны въезда</p>
+          </div>
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex bg-slate-100 rounded-2xl p-1 gap-1">
+              {[
+                { id: "ru", label: "🇷🇺 Въезд в Россию" },
+                { id: "kz", label: "🇰🇿 Въезд в Казахстан" },
+              ].map(tab => (
+                <button key={tab.id} onClick={() => setTariffTab(tab.id as "ru" | "kz")}
+                  className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    tariffTab === tab.id ? "bg-white shadow text-blue-600" : "text-slate-500 hover:text-slate-700"
+                  }`}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {(tariffTab === "ru" ? TARIFFS_RU : TARIFFS_KZ).map((t, i) => (
+              <div key={i} className={`rounded-3xl p-6 text-center relative transition-all ${
+                t.popular
+                  ? "bg-gradient-to-b from-blue-600 to-blue-500 text-white shadow-xl shadow-blue-200"
+                  : "bg-white border border-slate-100 card-hover"
+              }`}>
+                {t.popular && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-400 text-white text-xs font-bold px-4 py-1 rounded-full">
+                    Популярный
+                  </span>
+                )}
+                <p className={`text-sm font-medium mb-3 ${t.popular ? "text-white/80" : "text-slate-500"}`}>{t.period}</p>
+                <p className={`text-2xl font-bold mb-4 ${t.popular ? "text-white" : "text-slate-900"}`}>{t.price}</p>
+                <button onClick={() => setShowForm(true)}
+                  className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    t.popular ? "bg-white text-blue-600 hover:bg-blue-50" : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                  }`}>
+                  Оформить
+                </button>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-slate-400 text-xs mt-4">*Точная стоимость рассчитывается индивидуально</p>
+        </div>
+      </section>
+
+      <div className="section-divider mx-5" />
+
+      {/* HOW IT WORKS */}
+      <section id="how" className="py-20 px-5 section-blue-soft">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <span className="badge-blue mb-3">Простой процесс</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 mt-3">Как это работает</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {HOW_STEPS.map((s, i) => (
+              <div key={i} className="relative">
+                <div className="bg-white rounded-3xl p-7 card-hover shadow-sm text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
+                    <Icon name={s.icon as "Upload"} size={24} className="text-white" />
+                  </div>
+                  <div className="text-4xl font-bold text-blue-100 mb-2 font-display">{s.num}</div>
+                  <h3 className="font-bold text-slate-900 text-base mb-2">{s.title}</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">{s.desc}</p>
+                </div>
+                {i < HOW_STEPS.length - 1 && (
+                  <div className="hidden md:flex absolute top-1/2 -right-3 z-10 w-6 h-6 rounded-full bg-blue-500 text-white items-center justify-center shadow">
+                    <Icon name="ChevronRight" size={14} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="font-display text-2xl font-bold text-slate-900 mb-5">Что потребуется</h3>
+                <div className="space-y-4">
+                  {DOCS_LIST.map((d, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                        <Icon name={d.icon as "Car"} size={20} className="text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800 text-sm">{d.label}</p>
+                        <p className="text-slate-400 text-xs mt-0.5">{d.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => setShowForm(true)}
+                  className="btn-primary mt-7 px-7 py-3 flex items-center gap-2 text-sm">
+                  <Icon name="ArrowRight" size={16} />
+                  Начать оформление
+                </button>
+              </div>
+              <div className="rounded-2xl overflow-hidden">
+                <img src={DOCS_IMG} alt="Документы" className="w-full h-52 object-cover" />
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {FEATURES.map((f, i) => (
-              <div key={i} className="rounded-2xl border border-white/8 bg-card p-6 card-glow text-center">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
-                  style={{ background: `${f.color}18`, border: `1px solid ${f.color}35` }}
-                >
-                  <Icon name={f.icon as "Zap"} size={22} style={{ color: f.color }} />
+      <div className="section-divider mx-5" />
+
+      {/* PROMO */}
+      <section id="promo" className="py-20 px-5">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="discount-tag mb-3">АКЦИИ</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 mt-4">Специальные предложения</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-5">
+            {PROMOS.map((p, i) => (
+              <div key={i} className="bg-white rounded-3xl p-6 card-hover border border-slate-100 shadow-sm">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: p.iconBg }}>
+                    <Icon name={p.icon as "Zap"} size={22} style={{ color: p.iconColor }} />
+                  </div>
+                  <span className={p.tagColor}>{p.tag}</span>
                 </div>
-                <h4 className="font-semibold text-white mb-2 text-sm">{f.title}</h4>
-                <p className="text-white/50 text-xs leading-relaxed">{f.desc}</p>
+                <h3 className="font-bold text-slate-900 mb-2">{p.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed mb-4">{p.desc}</p>
+                <span className={p.badgeClass}>{p.badge}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <div className="section-line mx-6" />
+      <div className="section-divider mx-5" />
 
-      {/* FORM */}
-      <section id="form" className="py-24 px-6 relative">
-        <div className="absolute inset-0 mesh-bg opacity-30" />
-        <div className="max-w-2xl mx-auto relative z-10">
+      {/* REVIEWS */}
+      <section id="reviews" className="py-20 px-5 section-blue-soft">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-purple-400 font-medium text-sm uppercase tracking-widest mb-3">Форма</p>
-            <h2 className="font-display text-4xl md:text-5xl font-bold">
-              ПОДАТЬ <span className="gradient-text">ЗАЯВКУ</span>
-            </h2>
-            <p className="text-white/50 mt-4">Заполните все поля и прикрепите файлы при необходимости</p>
+            <span className="badge-blue mb-3">Отзывы</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 mt-3">Нам доверяют клиенты</h2>
           </div>
-
-          {submitted ? (
-            <div className="rounded-3xl border border-green-500/30 bg-green-500/10 p-12 text-center animate-scale-in">
-              <div
-                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
-                style={{ background: 'rgba(0,255,136,0.15)', border: '2px solid rgba(0,255,136,0.4)' }}
-              >
-                <Icon name="CheckCircle" size={40} style={{ color: '#00ff88' }} />
-              </div>
-              <h3 className="font-display text-2xl font-bold text-white mb-3">Заявка отправлена!</h3>
-              <p className="text-white/60 mb-8">Мы получили вашу заявку и свяжемся с вами в ближайшее время.</p>
-              <button
-                onClick={() => {
-                  setSubmitted(false);
-                  setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
-                  setFiles([]);
-                }}
-                className="btn-neon px-8 py-3 rounded-xl font-bold"
-              >
-                Отправить ещё одну
-              </button>
-            </div>
-          ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="rounded-3xl border border-white/10 bg-card p-8 md:p-10 space-y-5"
-              style={{ boxShadow: '0 0 60px rgba(168,85,247,0.08)' }}
-            >
-              <div className="grid sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-2 uppercase tracking-wider">Имя *</label>
-                  <input
-                    required
-                    value={formData.name}
-                    onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-                    placeholder="Ваше имя"
-                    className="input-neon w-full px-4 py-3 rounded-xl text-sm"
-                  />
+          <div className="grid sm:grid-cols-2 gap-5">
+            {REVIEWS.map((r, i) => (
+              <div key={i} className="bg-white rounded-3xl p-6 card-hover shadow-sm border border-slate-100">
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: r.stars }).map((_, j) => (
+                    <Icon key={j} name="Star" size={14} className="text-amber-400" />
+                  ))}
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-white/60 mb-2 uppercase tracking-wider">Телефон</label>
-                  <input
-                    value={formData.phone}
-                    onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
-                    placeholder="+7 (999) 000-00-00"
-                    className="input-neon w-full px-4 py-3 rounded-xl text-sm"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-2 uppercase tracking-wider">Email *</label>
-                <input
-                  required
-                  type="email"
-                  value={formData.email}
-                  onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
-                  placeholder="email@example.com"
-                  className="input-neon w-full px-4 py-3 rounded-xl text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-2 uppercase tracking-wider">Тема заявки *</label>
-                <input
-                  required
-                  value={formData.subject}
-                  onChange={e => setFormData(p => ({ ...p, subject: e.target.value }))}
-                  placeholder="Кратко опишите тему"
-                  className="input-neon w-full px-4 py-3 rounded-xl text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-2 uppercase tracking-wider">Сообщение *</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={formData.message}
-                  onChange={e => setFormData(p => ({ ...p, message: e.target.value }))}
-                  placeholder="Подробно опишите вашу заявку..."
-                  className="input-neon w-full px-4 py-3 rounded-xl text-sm resize-none"
-                />
-              </div>
-
-              {/* File upload */}
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-2 uppercase tracking-wider">
-                  Фото и файлы <span className="normal-case text-white/30">(до 5 файлов)</span>
-                </label>
-                <div
-                  className={`upload-zone rounded-2xl p-6 text-center cursor-pointer ${dragging ? "dragover" : ""}`}
-                  onDragOver={e => { e.preventDefault(); setDragging(true); }}
-                  onDragLeave={() => setDragging(false)}
-                  onDrop={handleDrop}
-                  onClick={() => fileRef.current?.click()}
-                >
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    multiple
-                    accept="image/*,.pdf,.doc,.docx"
-                    className="hidden"
-                    onChange={handleFileInput}
-                  />
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                    style={{ background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.25)' }}
-                  >
-                    <Icon name="Upload" size={22} style={{ color: '#a855f7' }} />
+                <p className="text-slate-700 text-sm leading-relaxed mb-4">"{r.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">{r.name[0]}</span>
                   </div>
-                  <p className="text-white/50 text-sm">
-                    Перетащите файлы сюда или <span className="text-purple-400 font-medium">нажмите для выбора</span>
-                  </p>
-                  <p className="text-white/25 text-xs mt-1">JPG, PNG, PDF, DOC — до 10 МБ каждый</p>
-                </div>
-
-                {files.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {files.map((file, i) => (
-                      <div key={i} className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/10 bg-white/3">
-                        <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ background: 'rgba(168,85,247,0.15)' }}
-                        >
-                          <Icon
-                            name={file.type.startsWith("image/") ? "Image" : "FileText"}
-                            size={14}
-                            style={{ color: '#a855f7' }}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white/80 truncate">{file.name}</p>
-                          <p className="text-xs text-white/30">{(file.size / 1024).toFixed(0)} КБ</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeFile(i)}
-                          className="text-white/30 hover:text-red-400 transition-colors"
-                        >
-                          <Icon name="X" size={16} />
-                        </button>
-                      </div>
-                    ))}
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{r.name}</p>
+                    <p className="text-xs text-slate-400">{r.city}</p>
                   </div>
-                )}
+                </div>
               </div>
-
-              <button
-                type="submit"
-                className="btn-neon w-full py-4 rounded-2xl text-base font-bold mt-2"
-              >
-                Отправить заявку
-                <Icon name="ArrowRight" size={18} className="inline ml-2" />
-              </button>
-
-              <p className="text-center text-xs text-white/25">
-                Нажимая кнопку, вы соглашаетесь с обработкой персональных данных
-              </p>
-            </form>
-          )}
+            ))}
+          </div>
         </div>
       </section>
 
-      <div className="section-line mx-6" />
+      <div className="section-divider mx-5" />
 
       {/* FAQ */}
-      <section id="faq" className="py-24 px-6">
+      <section id="faq" className="py-20 px-5">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-purple-400 font-medium text-sm uppercase tracking-widest mb-3">FAQ</p>
-            <h2 className="font-display text-4xl md:text-5xl font-bold">
-              ЧАСТЫЕ <span className="gradient-text">ВОПРОСЫ</span>
-            </h2>
+            <span className="badge-blue mb-3">FAQ</span>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 mt-3">Частые вопросы</h2>
           </div>
-
           <div className="space-y-3">
             {FAQ_ITEMS.map((item, i) => (
-              <div
-                key={i}
-                className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
-                  openFaq === i
-                    ? "border-purple-500/40 bg-purple-500/8"
-                    : "border-white/8 bg-card hover:border-white/15"
-                }`}
-              >
-                <button
-                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left"
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                >
-                  <span className="font-semibold text-sm md:text-base text-white/90">{item.q}</span>
-                  <div
-                    className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 ${openFaq === i ? "rotate-45" : ""}`}
-                    style={{
-                      background: openFaq === i ? 'rgba(168,85,247,0.2)' : 'rgba(255,255,255,0.06)',
-                      border: `1px solid ${openFaq === i ? 'rgba(168,85,247,0.4)' : 'rgba(255,255,255,0.1)'}`
-                    }}
-                  >
-                    <Icon name="Plus" size={14} style={{ color: openFaq === i ? '#a855f7' : 'rgba(255,255,255,0.5)' }} />
+              <div key={i} className={`rounded-2xl border transition-all overflow-hidden ${
+                openFaq === i ? "border-blue-200 bg-blue-50" : "border-slate-100 bg-white card-hover"
+              }`}>
+                <button className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}>
+                  <span className="font-semibold text-slate-800 text-sm">{item.q}</span>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
+                    openFaq === i ? "bg-blue-500 rotate-45" : "bg-slate-100"
+                  }`}>
+                    <Icon name="Plus" size={14} className={openFaq === i ? "text-white" : "text-slate-400"} />
                   </div>
                 </button>
                 {openFaq === i && (
-                  <div className="px-6 pb-5">
-                    <p className="text-white/55 text-sm leading-relaxed border-t border-white/8 pt-4">{item.a}</p>
+                  <div className="px-5 pb-4">
+                    <p className="text-slate-600 text-sm leading-relaxed border-t border-blue-100 pt-3">{item.a}</p>
                   </div>
                 )}
               </div>
@@ -507,74 +466,64 @@ export default function Index() {
         </div>
       </section>
 
-      <div className="section-line mx-6" />
-
-      {/* CONTACTS */}
-      <section id="contacts" className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 mesh-bg opacity-20" />
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            <p className="text-purple-400 font-medium text-sm uppercase tracking-widest mb-3">Контакты</p>
-            <h2 className="font-display text-4xl md:text-5xl font-bold">
-              СВЯЖИТЕСЬ <span className="gradient-text">С НАМИ</span>
-            </h2>
-            <p className="text-white/50 mt-4 max-w-md mx-auto">Мы всегда на связи и готовы ответить на ваши вопросы</p>
+      {/* CTA + CONTACTS */}
+      <section id="contacts" className="py-20 px-5 section-dark">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="font-display text-3xl md:text-5xl font-bold text-white mb-4">Готовы к поездке?</h2>
+          <p className="text-white/60 text-lg mb-8 max-w-md mx-auto">Оформите страховку прямо сейчас — займёт 10 минут</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <button onClick={() => setShowForm(true)}
+              className="btn-white px-10 py-4 text-base flex items-center justify-center gap-2">
+              <Icon name="FileText" size={18} />
+              Оформить полис
+            </button>
+            <a href="https://t.me/" target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 px-10 py-4 text-base font-semibold rounded-2xl border-2 transition-all"
+              style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+              <Icon name="MessageCircle" size={18} />
+              Написать в Telegram
+            </a>
           </div>
-
-          <div className="grid sm:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-3 gap-4 max-w-xl mx-auto">
             {[
-              { icon: "Mail", color: "#a855f7", label: "Email", value: "info@example.com" },
-              { icon: "Phone", color: "#00ffff", label: "Телефон", value: "+7 (999) 000-00-00" },
-              { icon: "MapPin", color: "#ff0080", label: "Адрес", value: "г. Москва, ул. Примерная, 1" },
+              { icon: "Mail", label: "Email", val: "info@avtopolis.ru" },
+              { icon: "MessageCircle", label: "Telegram", val: "@avtopolis" },
+              { icon: "Clock", label: "Поддержка", val: "24/7" },
             ].map((c, i) => (
-              <div key={i} className="rounded-2xl border border-white/10 bg-card p-6 card-glow text-center">
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{ background: `${c.color}15`, border: `1px solid ${c.color}30` }}
-                >
-                  <Icon name={c.icon as "Mail"} size={24} style={{ color: c.color }} />
-                </div>
-                <p className="text-xs text-white/40 uppercase tracking-wider mb-1">{c.label}</p>
-                <p className="text-white/85 font-medium text-sm">{c.value}</p>
+              <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
+                <Icon name={c.icon as "Mail"} size={20} className="text-blue-300 mx-auto mb-2" />
+                <p className="text-white/40 text-xs mb-1">{c.label}</p>
+                <p className="text-white text-sm font-medium">{c.val}</p>
               </div>
             ))}
-          </div>
-
-          <div
-            className="mt-12 rounded-3xl border border-purple-500/20 bg-purple-500/5 p-10 text-center"
-            style={{ boxShadow: '0 0 60px rgba(168,85,247,0.08)' }}
-          >
-            <h3 className="font-display text-2xl font-bold text-white mb-3">Готовы начать?</h3>
-            <p className="text-white/50 mb-8 max-w-sm mx-auto">Заполните форму прямо сейчас и мы обработаем вашу заявку максимально быстро</p>
-            <button
-              onClick={() => scrollTo("#form")}
-              className="btn-neon px-10 py-4 rounded-2xl font-bold text-base"
-            >
-              Заполнить форму
-            </button>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/8 py-8 px-6">
+      <footer className="bg-slate-950 py-8 px-5">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="font-display text-lg font-bold gradient-text">ЗАЯВКИ</span>
-          <p className="text-white/25 text-sm">© 2025 Все права защищены</p>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
+              <Icon name="Shield" size={14} className="text-white" />
+            </div>
+            <span className="font-display text-lg font-bold text-white">АвтоПолис</span>
+          </div>
+          <p className="text-slate-500 text-sm">© 2025 АвтоПолис. Все права защищены.</p>
           <div className="flex gap-4">
-            {NAV_LINKS.map(link => (
-              <button
-                key={link.href}
-                onClick={() => scrollTo(link.href)}
-                className="text-white/30 hover:text-white/70 text-xs transition-colors"
-              >
-                {link.label}
+            {NAV_LINKS.map(l => (
+              <button key={l.href} onClick={() => scrollTo(l.href)}
+                className="text-slate-500 hover:text-white text-xs transition-colors">
+                {l.label}
               </button>
             ))}
           </div>
         </div>
       </footer>
 
+      {/* MODALS */}
+      {showForm && <FormModal onClose={() => setShowForm(false)} onSubmit={handleFormSubmit} />}
+      {orderId && <OrderTracker orderId={orderId} currentStatus="processing" onClose={() => setOrderId(null)} />}
     </div>
   );
 }
